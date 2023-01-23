@@ -1,0 +1,22 @@
+use std::io::{self, BufRead, BufReader, Write};
+use std::net::TcpStream;
+use std::str;
+
+/// Create TCP connection with specified IP address and port number.
+///
+/// * `address` - An IP address and port number, written like `addr:port`.
+pub fn connect(address: &str) -> Result<(), failure::Error> {
+    let mut stream = TcpStream::connect(address)?;
+    loop {
+        // send input data by socket
+        let mut input = String::new();
+        io::stdin().read_line(&mut input)?;
+        stream.write_all(input.as_bytes())?;
+
+        // display data reserved by socket
+        let mut reader = BufReader::new(&stream);
+        let mut buffer = Vec::new();
+        reader.read_until(b'\n', &mut buffer)?;
+        print!("{}", str::from_utf8(&buffer)?);
+    }
+}
